@@ -1,0 +1,38 @@
+# nginx proxy address - http://172.17.0.1:61018
+
+name: airstation
+x-logging: &default-logging
+  options:
+    max-size: '5m'
+    max-file: '1'
+  driver: json-file
+
+services:
+  app:
+    image: cheatsnake/airstation:latest
+    container_name: airstation-app
+    hostname: ${BASE_HOST_NAME:-$HOSTNAME}
+    restart: always
+    pull_policy: always
+    logging: *default-logging
+    environment:
+      AIRSTATION_JWT_SIGN: ${APP_JWT_TOKEN:-LWpPZTOilFGAxBHoaTRqRPAEKXpVLUTUCodRDSRpMDCkxFdAyCIiVhkXaKHZwEBc}
+      AIRSTATION_SECRET_KEY: ${APP_SECRET_KEY:-dOxZYTTZgXKMHkqLBIQVImayQXAVWdzGBPuFJKggzcgvgPJPXpWzqzKaUOIOGGIr}
+    ports:
+      - '172.17.0.1:61018:7331'
+    volumes:
+      - './rootfs/data/airstation:/app/storage:rw'
+      - './rootfs/config/airstation:/app/static:rw'
+    healthcheck:
+      test: ['CMD-SHELL', 'nc -z 127.0.0.1 7331 || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 90s
+    networks:
+      - airstation
+
+networks:
+  airstation:
+    name: airstation
+    external: false
