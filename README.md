@@ -1,31 +1,31 @@
 ## 👋 Welcome to airstation 🚀
 
-Airstation - Your own online radio station
+Self-hosted airstation application
 
 ## 📋 Description
 
-Airstation is a self-hosted web app for streaming music over the Internet as an online radio station. Features a simple interface for uploading tracks and managing the playback queue, along with a minimalistic player for listeners. Streams music over HTTP using HLS.
+Self-hosted airstation application
 
 ## 🚀 Services
 
-- **app**: Airstation server (`cheatsnake/airstation:latest`)
+- **app**: cheatsnake/airstation:latest
 
 ## 📦 Installation
 
-### Using curl
-```shell
-curl -q -LSsf "https://raw.githubusercontent.com/composemgr/airstation/main/docker-compose.yaml" | docker compose -f - up -d
+### Option 1: Quick Install
+```bash
+curl -q -LSsf "https://raw.githubusercontent.com/composemgr/airstation/main/docker-compose.yaml" -o compose.yml
 ```
 
-### Using git
-```shell
+### Option 2: Git Clone
+```bash
 git clone "https://github.com/composemgr/airstation" ~/.local/srv/docker/airstation
 cd ~/.local/srv/docker/airstation
 docker compose up -d
 ```
 
-### Using composemgr
-```shell
+### Option 3: Using composemgr
+```bash
 composemgr install airstation
 ```
 
@@ -34,26 +34,28 @@ composemgr install airstation
 ### Environment Variables
 
 ```shell
-TZ=America/New_York
-BASE_HOST_NAME=${HOSTNAME}
+APP_JWT_TOKEN=LWpPZTOilFGAxBHoaTRqRPAEKXpVLUTUCodRDSRpMDCkxFdAyCIiVhkXaKHZwEBc
+APP_SECRET_KEY=dOxZYTTZgXKMHkqLBIQVImayQXAVWdzGBPuFJKggzcgvgPJPXpWzqzKaUOIOGGIr
 ```
+
+See `docker-compose.yaml` for complete list of configurable options.
 
 ## 🌐 Access
 
-- **Web Studio**: http://172.17.0.1:60069/studio
-- **Player**: http://172.17.0.1:60069/player  
-- **Stream**: http://172.17.0.1:60069/stream
+- **Web Interface**: http://172.17.0.1:61018
 
 ## 📂 Volumes
 
-- `./rootfs/data/airstation` - Uploaded tracks and database
+- `./rootfs/data/airstation` - Data storage
+- `./rootfs/config/airstation` - Data storage
 
-## 🎵 Usage
+## 🔐 Security
 
-1. Access /studio to upload tracks
-2. Manage playback queue
-3. Share /player URL with listeners
-4. FFmpeg handles audio processing automatically
+- Change all default passwords before deploying to production
+- Use strong secrets for all authentication tokens
+- Configure HTTPS using a reverse proxy (nginx, traefik, caddy)
+- Regularly update Docker images for security patches
+- Backup your data regularly
 
 ## 🔍 Logging
 
@@ -63,17 +65,27 @@ docker compose logs -f app
 
 ## 🛠️ Management
 
-```shell
+```bash
+# Start services
 docker compose up -d
-docker compose down  
+
+# Stop services
+docker compose down
+
+# Update to latest images
 docker compose pull && docker compose up -d
+
+# View logs
+docker compose logs -f
+
+# Restart services
+docker compose restart
 ```
 
 ## 📋 Requirements
 
 - Docker Engine 20.10+
 - Docker Compose V2+
-- Music files in common formats
 
 ## 🤝 Author
 
