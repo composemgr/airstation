@@ -21,8 +21,8 @@ services:
     ports:
       - '172.17.0.1:61018:7331'
     volumes:
-      - './rootfs/data/airstation:/app/storage:rw'
-      - './rootfs/config/airstation:/app/static:rw'
+      - './volumes/data/airstation:/app/storage:rw'
+      - './volumes/config/airstation:/app/static:rw'
     healthcheck:
       test: ['CMD-SHELL', 'nc -z 127.0.0.1 7331 || exit 1']
       interval: 10s
