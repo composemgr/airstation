@@ -46,8 +46,8 @@ See `docker-compose.yaml` for complete list of configurable options.
 
 ## 📂 Volumes
 
-- `./rootfs/data/airstation` - Data storage
-- `./rootfs/config/airstation` - Data storage
+- `./volumes/data/airstation` - Data storage
+- `./volumes/config/airstation` - Data storage
 
 ## 🔐 Security
 
