@@ -17,6 +17,8 @@ services:
     logging: *default-logging
     environment:
       TZ: ${TZ:-America/New_York}
+      CONTAINER_NAME: airstation-app
+      HOSTNAME: ${BASE_HOST_NAME:-$HOSTNAME}
       AIRSTATION_JWT_SIGN: ${APP_JWT_TOKEN:-changeme_jwt_sign_token_min_32_chars}
       AIRSTATION_SECRET_KEY: ${APP_SECRET_KEY:-changeme_secret_key_min_32_chars}
     ports:
@@ -30,10 +32,32 @@ services:
       timeout: 5s
       retries: 3
       start_period: 90s
+    labels:
+      - 'traefik.enable=true'
+      - 'cloudflare.enable=true'
+      - 'traefik.docker.network=proxy'
+      - 'cloudflare.service=http://airstation-app:7331'
+      - 'cloudflare.hostname=airstation.${CLOUDFLARE_ZONE_NAME:-}'
+      - 'traefik.http.routers.airstation-app.entrypoints=http'
+      - 'traefik.http.routers.airstation-app-secure.tls=true'
+      - 'traefik.http.routers.airstation-app.rule=Host($(${BASE_HOST_NAME:-$HOSTNAME}))'
+      - 'traefik.http.middlewares.airstation-app-https-redirect.redirectscheme.scheme=https'
+      - 'traefik.http.routers.airstation-app.middlewares=airstation-app-https-redirect'
+      - 'traefik.http.routers.airstation-app-secure.entrypoints=https'
+      - 'traefik.http.routers.airstation-app-secure.rule=Host($(${BASE_HOST_NAME:-$HOSTNAME}))'
+      - 'traefik.http.routers.airstation-app-secure.tls.certresolver=cloudflare'
+      - 'traefik.http.routers.airstation-app-secure.service=airstation-app'
+      - 'traefik.http.services.airstation-app.loadbalancer.server.port=7331'
     networks:
       - airstation
+      - proxy
+      - cloudflare
 
 networks:
   airstation:
     name: airstation
     external: false
+  proxy:
+    external: true
+  cloudflare:
+    external: true
