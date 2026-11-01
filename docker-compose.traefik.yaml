@@ -1,0 +1,53 @@
+name: airstation
+x-logging: &default-logging
+  options:
+    max-size: '5m'
+    max-file: '1'
+  driver: json-file
+
+services:
+  app:
+    image: cheatsnake/airstation:latest
+    container_name: airstation-app
+    domainname: ${BASE_DOMAIN_NAME:-example.com}
+    hostname: ${BASE_HOST_NAME:-$HOSTNAME}
+    restart: always
+    pull_policy: always
+    logging: *default-logging
+    environment:
+      TZ: ${TZ:-America/New_York}
+      CONTAINER_NAME: airstation-app
+      HOSTNAME: ${BASE_HOST_NAME:-$HOSTNAME}
+      AIRSTATION_JWT_SIGN: ${APP_JWT_TOKEN:-changeme_jwt_sign_token_min_32_chars}
+      AIRSTATION_SECRET_KEY: ${APP_SECRET_KEY:-changeme_secret_key_min_32_chars}
+    volumes:
+      - './volumes/data/airstation:/app/storage:rw'
+      - './volumes/config/airstation:/app/static:rw'
+    healthcheck:
+      test: ['CMD-SHELL', 'nc -z 127.0.0.1 7331 || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 90s
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.docker.network=traefik'
+      - 'traefik.http.routers.airstation-app.entrypoints=http'
+      - 'traefik.http.routers.airstation-app.rule=Host(`${BASE_HOST_NAME:-$HOSTNAME}`)'
+      - 'traefik.http.routers.airstation-app.middlewares=airstation-app-https-redirect'
+      - 'traefik.http.middlewares.airstation-app-https-redirect.redirectscheme.scheme=https'
+      - 'traefik.http.routers.airstation-app-secure.entrypoints=https'
+      - 'traefik.http.routers.airstation-app-secure.rule=Host(`${BASE_HOST_NAME:-$HOSTNAME}`)'
+      - 'traefik.http.routers.airstation-app-secure.tls.certresolver=cloudflare'
+      - 'traefik.http.routers.airstation-app-secure.service=airstation-app'
+      - 'traefik.http.services.airstation-app.loadbalancer.server.port=7331'
+    networks:
+      - airstation
+      - traefik
+
+networks:
+  airstation:
+    name: airstation
+    external: false
+  traefik:
+    external: true

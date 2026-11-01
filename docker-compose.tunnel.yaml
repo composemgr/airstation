@@ -1,0 +1,45 @@
+name: airstation
+x-logging: &default-logging
+  options:
+    max-size: '5m'
+    max-file: '1'
+  driver: json-file
+
+services:
+  app:
+    image: cheatsnake/airstation:latest
+    container_name: airstation-app
+    domainname: ${BASE_DOMAIN_NAME:-example.com}
+    hostname: ${BASE_HOST_NAME:-$HOSTNAME}
+    restart: always
+    pull_policy: always
+    logging: *default-logging
+    environment:
+      TZ: ${TZ:-America/New_York}
+      CONTAINER_NAME: airstation-app
+      HOSTNAME: ${BASE_HOST_NAME:-$HOSTNAME}
+      AIRSTATION_JWT_SIGN: ${APP_JWT_TOKEN:-changeme_jwt_sign_token_min_32_chars}
+      AIRSTATION_SECRET_KEY: ${APP_SECRET_KEY:-changeme_secret_key_min_32_chars}
+    volumes:
+      - './volumes/data/airstation:/app/storage:rw'
+      - './volumes/config/airstation:/app/static:rw'
+    healthcheck:
+      test: ['CMD-SHELL', 'nc -z 127.0.0.1 7331 || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 90s
+    labels:
+      - 'cloudflare.enable=true'
+      - 'cloudflare.service=http://airstation-app:7331'
+      - 'cloudflare.hostname=${BASE_HOST_NAME:-$HOSTNAME}'
+    networks:
+      - airstation
+      - cloudflare
+
+networks:
+  airstation:
+    name: airstation
+    external: false
+  cloudflare:
+    external: true
